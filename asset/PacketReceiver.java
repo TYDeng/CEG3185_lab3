@@ -1,7 +1,7 @@
 import java.net.*;
 import java.io.*;
 
-public class Server extends Thread {
+public class PacketReceiver extends Thread {
 
     public static void main(String[] args) throws Exception {
         System.out.println("Server Listening on 8888");

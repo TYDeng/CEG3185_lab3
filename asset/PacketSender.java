@@ -1,7 +1,7 @@
 import java.net.*;
 import java.io.*;
 
-public class Client {
+public class PacketSender {
     public static void main(String[] args) throws Exception{
 
         //try to connect to server - localhost @ port 8888
