@@ -156,10 +156,10 @@ public class PacketSender extends Thread{
     // Encodes the payload and other necessary information into a packet
     private static String encode(InetAddress cip, InetAddress sip, String pl){
 
-        String headerl = "45"; //header length
-        String typeofs = "00"; //type of service (fixed)
-        String fo ="4000"; //the fragment offset of IP header fields
-        String ttltcp ="4006"; //40 the TTL field, 06 TCP
+        String headerl = "45";
+        String typeofs = "00";
+        String fo ="4000"; 
+        String ttltcp ="4006"; 
         String id = radidf() ;
 
 
