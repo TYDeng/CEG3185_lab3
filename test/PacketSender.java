@@ -8,197 +8,181 @@ import java.io.*;
 
 public class PacketSender extends Thread{
 
-    private static Socket myClient;
-    private static DataOutputStream output;
+    private static Socket client;
+    private static DataOutputStream dataoutput;
 
     // Constructor: sets up a socket connection and sends data to the specified address and port
-    public PacketSender(String address, int port, String data){
+    public PacketSender(String address, int port, String string){
         try{
-            myClient = new Socket(address, port);
+            client = new Socket(address, port);
+            System.out.println("IP Datagram (packet) to be sent: "+ string.toUpperCase());
+            dataoutput = new DataOutputStream(client.getOutputStream());
+            dataoutput.writeUTF(string);
 
-            System.out.println("IP Datagram (packet) to be sent: "+ data.toUpperCase());
-
-            output = new DataOutputStream(myClient.getOutputStream());
-            output.writeUTF(data);
-
-        } catch (Exception err){
-            System.out.println(err);
+        } catch (Exception e){
+            System.out.println(e);
 
         }        
     }
 
     // Converts a string to its hexadecimal representation
-    private static String convertStrToHex(String str){
-        
-        StringBuffer sb = new StringBuffer();
+    private static String constringhex (String string){
+        StringBuffer read = new StringBuffer();
+        char chararray[] = string.toCharArray();
 
-        char ch[] = str.toCharArray();
-
-        for (int i=0;i<ch.length;i++){
-            sb.append(Integer.toHexString(ch[i]));
+        for (int i=0; i < chararray.length; i++){
+            read.append(Integer.toHexString(chararray[i]));
         }
-        return sb.toString();
-
+        return read.toString();
     }
 
 
     // Converts an IP address to its hexadecimal representation
-    private static String convertIPToHex(InetAddress address){
-        
-        StringBuffer sb = new StringBuffer();
+    private static String coniphex (InetAddress ip){
+        StringBuffer read = new StringBuffer();
+        String string = (ip.toString()).replace("/", "");
+        String[] tstring = string.split("\\.");
 
-        String str = (address.toString()).replace("/", "");
+        for (int i =0; i < tstring.length; i++){
+            String hex = Integer.toHexString(Integer.parseInt(tstring[i]));
 
-        String[] words = str.split("\\.");
-
-        for (int i =0;i<words.length;i++){
-            String hexString = Integer.toHexString(Integer.parseInt(words[i]));
-
-            if (hexString.length()!=2){
-                hexString="0"+hexString;
+            if (hex.length()!= 2){
+                hex="0"+hex;
             }
-            sb.append(hexString);
-        }
 
-        return sb.toString();
+            read.append(hex);
+        }
+        return read.toString();
 
     }
     
 
     // Splits a string into sections of four characters each for readability
-    private static String splitFunc(String str){
-        StringBuffer sb = new StringBuffer();
+    private static String devsting (String string){
+        StringBuffer read = new StringBuffer();
 
-        char ch[] = str.toCharArray();
+        char chararray[] = string.toCharArray();
 
-        for(int i = 0; i < ch.length; i++) {
-            sb.append(ch[i]);
-            if((i+1)%4==0) {
-                sb.append(" ");
+        for(int i = 0; i < chararray.length; i++) {
+            read.append(chararray[i]);
+
+            if(( i + 1 ) % 4 == 0) {
+                read.append(" ");
             }
+
         }
 
-        return sb.toString();
+        return read.toString();
 
     }
 
 
     // Calculates the length of a payload in hexadecimal with a fixed addition of 20 bytes for the header
-    private static String getLength(String str){
-        int len = str.length()+20;
+    private static String getpayloadlen (String string){
+        int l = string.length()+20;
+        String hexpy = Integer.toHexString(l);
 
-        String lenHex = Integer.toHexString(len);
-
-        if (lenHex.length()==1){
-            return "000"+lenHex;
-
-        } else if (lenHex.length()==2){
-            return "00"+lenHex;
+        if (hexpy.length() == 1){
+            return "000" + hexpy;
+        }
+        else if (hexpy.length() == 2) {
+            return "00" + hexpy;
 
         }
-        else if (lenHex.length()==3){
-            return "0"+lenHex;
+        else if (hexpy.length() == 3){
+            return "0" + hexpy;
 
         }
-
-        return lenHex;
+        return hexpy;
     }
 
     // Calculates a checksum for the packet
-    private static String calcChecks(String s){
+    private static String calc(String string){
         
-        s = splitFunc(s);
-        String[] words = s.split(" ");
+        string = devsting (string);
+        String[] stringlist = string.split(" ");
+        int count = 0;
 
-        int cint = 0;
-
-        
-        for (int i=0; i<words.length;i++){
-            cint+=  Integer.parseInt(words[i], 16);
+        for (int i = 0; i < stringlist.length; i++){
+            count +=  Integer.parseInt( stringlist[i], 16);
         }
 
-        String csum = Integer.toHexString(cint);
+        String sum = Integer.toHexString(count);
 
-        
-        if (csum.length()!=4){
-            String f = csum.substring(0,1);
-            csum=csum.substring(1);
-            cint = Integer.parseInt(csum,16)+Integer.parseInt(f,16);
+        if (sum.length() != 4){
+            String first = sum.substring(0,1);
+            sum = sum.substring(1);
+            count = Integer.parseInt(sum,16)+Integer.parseInt(first,16);
         }
+        count = 65535 - count;
 
-        
-        cint = 65535-cint;
-
-        return Integer.toHexString(cint);
+        return Integer.toHexString(count);
 
     }
 
     // Pads the payload to ensure it fits a certain size
-    private static String addPad(String str){
+    private static String spy(String string){
 
-        while (str.length()%8!=0){
-            str=str+"0";
+        while (string.length() % 8 != 0){
+            string = string + "0";
         }
-        return str;
+        return string;
     }
 
     // Generates a random identification field for each packet
-    private static String setIdField(){
+    private static String radidf(){
 
-        Random r = new Random();
-        String id_field = Integer.toHexString(r.nextInt(65535+1));
+        Random rad = new Random();
+        String id = Integer.toHexString(rad.nextInt(65535+1));
 
         
-        if (id_field.length()==1){
+        if (id.length() == 1){
             System.out.println("Yes");
-            return "000"+id_field;
+            return "000" + id;
         }
-        else if(id_field.length()==2){
+        else if(id.length() == 2){
             System.out.println("No");
-            return "00"+id_field;
+            return "00" + id;
         }
-        else if(id_field.length()==3){
+        else if(id.length() == 3){
             System.out.println("~");
-            return "0"+id_field;
+            return "0" + id;
         }
 
-        return id_field;
+        return id;
 
     }
 
     // Encodes the payload and other necessary information into a packet
-    private static String encodeFunc(InetAddress ipClient, InetAddress ipServer, String payL){
-        
+    private static String encode(InetAddress cip, InetAddress sip, String pl){
 
-        String headerLength = "45"; //4 refers to IPv4 and 5 corresponds to the header length (fixed)
-        String tOS = "00"; //type of service (fixed)
-        String flags ="4000"; //corresponds to the fragment offset of IP header fields (fixed)
-        String ttl ="4006"; //40 corresponds to the TTL field, 06 corresponds to TCP, protocol field (fixed)
-        String idField = setIdField() ; //identification field (variable)
+        String headerl = "45"; //header length
+        String typeofs = "00"; //type of service (fixed)
+        String fo ="4000"; //the fragment offset of IP header fields
+        String ttltcp ="4006"; //40 the TTL field, 06 TCP
+        String id = radidf() ;
 
- 
-        String clientIP = convertIPToHex(ipClient); 
-        String serverIP = convertIPToHex(ipServer); 
-        String payload = convertStrToHex(payL); 
 
-        String len = getLength(payL); 
-        String csum = calcChecks(headerLength+tOS+len+idField+flags+ttl+clientIP+serverIP);
+        String clientip = coniphex(cip);
+        String serverip = coniphex(sip);
+        String payload = constringhex(pl);
+
+        String plen = getpayloadlen(pl);
+        String csum = calc(headerl + typeofs + plen + id + fo + ttltcp + clientip + serverip);
 
         System.out.println("Checksum value: "+ (csum.toUpperCase())+"\n" );
 
-        String data = headerLength+tOS+len+idField+flags+ttl+csum+clientIP+serverIP+addPad(payload);
+        String data = headerl + typeofs + plen + id + fo + ttltcp + csum + clientip + serverip + spy(payload);
 
-
-        return splitFunc(data);
+        return devsting (data);
     }
 
     public static void main(String[] args) throws IOException {
 
-    
-        String ipDest =InetAddress.getLocalHost().getHostAddress();
-        String ipSrs = InetAddress.getLocalHost().getHostAddress();
+        String destip =InetAddress.getLocalHost().getHostAddress();
+        String sip = destip;
         String machineName = InetAddress.getLocalHost().getHostName(); 
-        String payL = "COLOMBIA 2 - MESSI 0"; 
+        String payload = "COLOMBIA 2 - MESSI 0";
         
  
 
@@ -211,33 +195,30 @@ public class PacketSender extends Thread{
             if (option.toLowerCase().equals("y")){
                 System.out.println("------------------------------------");
                 System.out.println("\nEnter a Server/Destination IP:   ");
-                ipDest = input.readLine();
+                destip = input.readLine();
                 System.out.println("\nEnter Payload:   ");
-                payL = input.readLine();
+                payload = input.readLine();
                 System.out.println("------------------------------------");
-
-            }  
-
-        } else if (args.length == 4){
-            ipDest =args[1];
-            payL = args[3];
+            }
+        }
+        else if (args.length == 4){
+            destip =args[1];
+            payload = args[3];
         }
 
         System.out.println("-----Thank You!-----\n");
-
         System.out.println("\n----- Provided data ------");
-        System.out.println("Source IP: "+ ipSrs);
-        System.out.println("Destination IP: "+ ipDest);
-        System.out.println("Payload: "+ payL);
+        System.out.println("Source IP: "+ sip);
+        System.out.println("Destination IP: "+ destip);
+        System.out.println("Payload: "+ payload);
         System.out.println("------------------------\n");
 
-        String data = encodeFunc(InetAddress.getByName(ipSrs), InetAddress.getByName(ipDest), payL);
+        String data = encode(InetAddress.getByName(sip), InetAddress.getByName(destip), payload);
 
         new PacketSender(machineName, 4999, data);
 
-
-        myClient.close();
-        output.close();
+        client.close();
+        dataoutput.close();
         input.close();
 
     }
