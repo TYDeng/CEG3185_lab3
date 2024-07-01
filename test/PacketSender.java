@@ -187,8 +187,16 @@ public class PacketSender extends Thread{
 
         BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
 
-        System.out.println("Using default Server/Destination IP and Payload.\n");
-        System.out.println("Source IP is: "+ sip);
+        System.out.println("Using default Server/Destination IP.\n");
+        System.out.println("Would you like to enter your payload? Type yes if you want");
+        String option = input.readLine();
+        if (option.toLowerCase().equals("yes")){
+            System.out.println("\nEnter Payload: ");
+            payload = input.readLine();
+        }
+
+
+        System.out.println("\nSource IP is: "+ sip);
         System.out.println("Destination IP is: "+ destip);
         System.out.println("Payload is: "+ payload +"\n");
 
