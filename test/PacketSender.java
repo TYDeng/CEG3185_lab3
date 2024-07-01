@@ -1,7 +1,9 @@
 import java.net.*;
 import java.util.Random;
 import java.io.*;
-    
+//Group 25
+//Tengyang Deng 300156567
+//Wenbo Yu 300161788
 
 
 public class PacketSender extends Thread{
@@ -9,7 +11,7 @@ public class PacketSender extends Thread{
     private static Socket myClient;
     private static DataOutputStream output;
 
-
+    // Constructor: sets up a socket connection and sends data to the specified address and port
     public PacketSender(String address, int port, String data){
         try{
             myClient = new Socket(address, port);
@@ -24,8 +26,8 @@ public class PacketSender extends Thread{
 
         }        
     }
-    
 
+    // Converts a string to its hexadecimal representation
     private static String convertStrToHex(String str){
         
         StringBuffer sb = new StringBuffer();
@@ -40,7 +42,7 @@ public class PacketSender extends Thread{
     }
 
 
-
+    // Converts an IP address to its hexadecimal representation
     private static String convertIPToHex(InetAddress address){
         
         StringBuffer sb = new StringBuffer();
@@ -63,6 +65,7 @@ public class PacketSender extends Thread{
     }
     
 
+    // Splits a string into sections of four characters each for readability
     private static String splitFunc(String str){
         StringBuffer sb = new StringBuffer();
 
@@ -80,6 +83,7 @@ public class PacketSender extends Thread{
     }
 
 
+    // Calculates the length of a payload in hexadecimal with a fixed addition of 20 bytes for the header
     private static String getLength(String str){
         int len = str.length()+20;
 
@@ -100,7 +104,7 @@ public class PacketSender extends Thread{
         return lenHex;
     }
 
-
+    // Calculates a checksum for the packet
     private static String calcChecks(String s){
         
         s = splitFunc(s);
@@ -128,7 +132,8 @@ public class PacketSender extends Thread{
         return Integer.toHexString(cint);
 
     }
-    
+
+    // Pads the payload to ensure it fits a certain size
     private static String addPad(String str){
 
         while (str.length()%8!=0){
@@ -137,7 +142,7 @@ public class PacketSender extends Thread{
         return str;
     }
 
-
+    // Generates a random identification field for each packet
     private static String setIdField(){
 
         Random r = new Random();
@@ -161,7 +166,7 @@ public class PacketSender extends Thread{
 
     }
 
-
+    // Encodes the payload and other necessary information into a packet
     private static String encodeFunc(InetAddress ipClient, InetAddress ipServer, String payL){
         
 
