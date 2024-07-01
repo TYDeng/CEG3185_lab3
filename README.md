@@ -10,10 +10,12 @@ This is the content of CEG3185_lab3
 ## Output and how to run:
 1. Open one terminal;
    TYPE: javac PacketReceiver.java
+   
    Then TYPE: java PacketReceiver
-2. Open another terminal;
+3. Open another terminal;
    TYPE: javac PacketSender.java
+   
    Then TYPE: java PacketSender
-3. You can type your payload if you want.
+5. You can type your payload if you want.
 
-4. [Sample output](test/Output.png)
+6. [Sample output](test/Output.png)
