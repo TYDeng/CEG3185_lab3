@@ -1,14 +1,8 @@
 import java.net.*;
-
 import java.io.*;
-
-    /**
-     * @class CEG 3185 Lab 3
-     * @author Michias Shiferaw and Teodora Vukojevic
-     * @since June 22 2023
-     * @version 2.1
-     * @param args
-     */
+//Group 25
+//Tengyang Deng 300156567
+//Wenbo Yu 300161788
 
 public class PacketReceiver extends Thread {
 
@@ -17,25 +11,19 @@ public class PacketReceiver extends Thread {
     private static Socket serviceSocket;
     private static DataInputStream input;
 
-
+    // Constructor initializes a server socket, accepts a client connection, and processes received data.
     public PacketReceiver(int port){
         try{
             myService = new ServerSocket(port);
             System.out.println("Server is up and running");
 
-            //Creating socket and waiting for client connection
+            
             serviceSocket = myService.accept();
-
-            //Establish socket connection to server
             System.out.println("\n***__Client Connected __***\n");
-
-            //Read from client socket to DataInputStream Object
             input = new DataInputStream(new BufferedInputStream(serviceSocket.getInputStream()));
 
-            //Reads the DataInputStream obj as a string that has been encoded using UTF-8 format
             String data = input.readUTF();
 
-            //Remove the added padding zeros
             data = removePad(data);
 
             System.out.println("IP Datagram (packet) received : "+ data.toUpperCase()+"\n");
@@ -47,6 +35,7 @@ public class PacketReceiver extends Thread {
         }
     }
 
+    // Removes padding from received data based on specified length.
     private static String removePad(String str){
         String[] strArr = str.split(" ");
         int len = Integer.parseInt(strArr[1],16);
@@ -55,6 +44,7 @@ public class PacketReceiver extends Thread {
         
     }
 
+    // Calculates checksum to validate data integrity.
     public static boolean calcChecksumFunc(String header, String len, String idField, String flags, String tcp, String csum, String ipS, String ipD){
         
         String p1 = ipS.substring(0, 4);
@@ -63,7 +53,6 @@ public class PacketReceiver extends Thread {
         String p3 = ipD.substring(0, 4);
         String p4 = ipD.substring(5);
 
-        //transform all the hexidecimals(base 16) to decimals (base 10)
         int hDecode = Integer.parseInt(header,16);
         int lDecode = Integer.parseInt(len,16);
         int iFDecode = Integer.parseInt(idField,16);
@@ -77,11 +66,11 @@ public class PacketReceiver extends Thread {
         int p4Decode = Integer.parseInt(p4,16);
 
 
-        int sum = hDecode+lDecode+iFDecode+fDecode+tDecode+csumDecode+p1Decode+p2Decode+p3Decode+p4Decode;//perform addition to retrieve sum of all bits
+        int sum = hDecode+lDecode+iFDecode+fDecode+tDecode+csumDecode+p1Decode+p2Decode+p3Decode+p4Decode;
 
-        String hexSum = Integer.toHexString(sum); //example transforms to 2FFFFD
+        String hexSum = Integer.toHexString(sum); 
 
-        //remove the carry value and add it to the sum value
+       
         if (hexSum.length()>4){
             String cry= hexSum.substring(0,1);
             hexSum = hexSum.substring(1);
@@ -90,16 +79,15 @@ public class PacketReceiver extends Thread {
             sum=cryD+hexSumD;
             hexSum=Integer.toHexString(sum);
         }
-        // if the value is FFFF then its one's complement is zero (no error)
+
         if (hexSum.equals("ffff")){
             return true;
         }
-        //otherwise return false to throw error msg
+
         return false;
 
     }
 
-    //Transform hexidecimal component to return the param's ip address
     public static String getAddy(String addy){
 
         int one = Integer.parseInt(addy.substring(0,2),16);
