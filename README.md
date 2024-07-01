@@ -8,6 +8,12 @@
 This is the content of CEG3185_lab3
 
 ## Output and how to run:
-1. run both .java file in test file
-2. In PacketSender.java, type y for customize payload
-3. [Sample output](test/Output.png)
+1. Open one terminal;
+   TYPE: javac PacketReceiver.java
+   Then TYPE: java PacketReceiver
+2. Open another terminal;
+   TYPE: javac PacketSender.java
+   Then TYPE: java PacketSender
+3. You can type your payload if you want.
+
+4. [Sample output](test/Output.png)
