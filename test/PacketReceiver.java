@@ -1,6 +1,13 @@
 import java.net.*;
-
 import java.io.*;
+
+    /**
+     * @class CEG 3185 Lab 3
+     * @author Michias Shiferaw and Teodora Vukojevic
+     * @since June 22 2023
+     * @version 2.1
+     * @param args
+     */
 
 public class PacketReceiver extends Thread {
 
@@ -9,21 +16,25 @@ public class PacketReceiver extends Thread {
     private static Socket Socket;
     private static DataInputStream in;
 
-
+    // Constructor initializes a server socket, accepts a client connection, and processes received data.
     public PacketReceiver(int port){
         try{
             serverSocket = new ServerSocket(port);
             System.out.println("\nServer established, waiting for the client");
 
-            //Waits for client connect
-            Socket = serverSocket.accept();
-            System.out.println("\n---[Client Connected]---\n");
+            //Creating socket and waiting for client connection
+            serviceSocket = myService.accept();
 
-            //Read from client
-            in = new DataInputStream(new BufferedInputStream(Socket.getInputStream()));
-            String data = in.readUTF();
+            //Establish socket connection to server
+            System.out.println("\n***__Client Connected __***\n");
 
-            //Remove padding zeros
+            //Read from client socket to DataInputStream Object
+            input = new DataInputStream(new BufferedInputStream(serviceSocket.getInputStream()));
+
+            //Reads the DataInputStream obj as a string that has been encoded using UTF-8 format
+            String data = input.readUTF();
+
+            //Remove the added padding zeros
             data = removePad(data);
 
             System.out.println("IP Datagram (packet) received : \n"+ data.toUpperCase()+"\n");
@@ -35,6 +46,7 @@ public class PacketReceiver extends Thread {
         }
     }
 
+    // Removes padding from received data based on specified length.
     private static String removePad(String str){
         String[] strArr = str.split(" ");
         int len = Integer.parseInt(strArr[1],16);
@@ -43,53 +55,7 @@ public class PacketReceiver extends Thread {
         
     }
 
-    //Decodes the hex stream
-    public static void decode(String in){
-        String message="";
-        String[] hex = in.split(" "); 
-        //example 
-        //4500 0028 1c46 4000 4006 9d35 c0a8 0003 c0a8 0001 
-        //434f 4c4f 4d42 4941 2032 202d 204d 4553 5349 2030
-
-        String header = hex[0];
-        String len = hex[1];
-        String idField = hex[2];
-        String flags= hex[3];
-        String tcp = hex[4];
-        String csum = hex[5];
-        String ipS = hex[6]+" "+hex[7];
-        String ipD = hex[8]+" "+hex[9];
-
-        for (int i=10; i<hex.length;i++){
-            message+=hex[i];
-        }
-
-        boolean valid = checksum(header, len, idField, flags, tcp, csum, ipS, ipD);
-
-        if (!valid){
-            System.out.println("The verification of the checksum: Incorrect, Packet discarded!");
-        } else{
-            String sourceIP = getAdd(ipS);
-
-            //28->00101000
-            int lenPacket = Integer.parseInt(len.substring(2,4),16); 
-
-            //Add 20 bytes to represents the payLoad size 
-            int payLoad = Integer.parseInt(len.substring(0,2),16)+20; 
-
-            message = convertToText(message);
-
-            //Output required messages
-            System.out.println("Received the data stream:");
-            System.out.println("The data received from "+sourceIP+" is:");
-            System.out.println("\n"+message);
-            System.out.println("The data has "+(8*payLoad)+" bites or "+payLoad+" bytes. Total length of the packet is "+lenPacket+" bytes.");
-            System.out.println("\nVerification of the checksum: Correct.\n");
-
-        }
-    }
-    
-    public static boolean checksum(String header, String len, String idField, String flags, String tcp, String checksum, String ipS, String ipD){
+    public static boolean calcChecksumFunc(String header, String len, String idField, String flags, String tcp, String csum, String ipS, String ipD){
         
         String p1 = ipS.substring(0, 4);
         String p2 = ipS.substring(5);
@@ -98,7 +64,7 @@ public class PacketReceiver extends Thread {
         String p4 = ipD.substring(5);
 
         //transform all the hexidecimals(base 16) to decimals (base 10)
-        int headerDeco = Integer.parseInt(header,16);
+        int hDecode = Integer.parseInt(header,16);
         int lDecode = Integer.parseInt(len,16);
         int iFDecode = Integer.parseInt(idField,16);
         int fDecode = Integer.parseInt(flags,16);
@@ -111,12 +77,11 @@ public class PacketReceiver extends Thread {
         int p4Decode = Integer.parseInt(p4,16);
 
 
-        int sum = headerDeco+lDecode+iFDecode+fDecode+tDecode+csumDecode+p1Decode+p2Decode+p3Decode+p4Decode;
-        
-        //Perform addition to retrieve sum of all bits 
+        int sum = hDecode+lDecode+iFDecode+fDecode+tDecode+csumDecode+p1Decode+p2Decode+p3Decode+p4Decode;//perform addition to retrieve sum of all bits
+
         String hexSum = Integer.toHexString(sum); //example transforms to 2FFFFD
 
-        //Remove carry value and add to sum
+        //remove the carry value and add it to the sum value
         if (hexSum.length()>4){
             String carry= hexSum.substring(0,1);
             hexSum = hexSum.substring(1);
@@ -125,17 +90,17 @@ public class PacketReceiver extends Thread {
             sum = carryInt + hexSumInt;
             hexSum = Integer.toHexString(sum);
         }
-        // Since the one's complement of FFFF is zero, return turn (correct)
+        // if the value is FFFF then its one's complement is zero (no error)
         if (hexSum.equals("ffff")){
             return true;
         }
-        //Return false for error
+        //otherwise return false to throw error msg
         return false;
 
     }
 
-    //Transform hexidecimal component to return the ip address
-    public static String getAdd(String address){
+    //Transform hexidecimal component to return the param's ip address
+    public static String getAddy(String addy){
 
         int one = Integer.parseInt(address.substring(0,2),16);
         int sec =  Integer.parseInt(address.substring(2,4),16);
