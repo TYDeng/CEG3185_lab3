@@ -15,7 +15,7 @@ public class PacketSender extends Thread{
     public PacketSender(String address, int port, String string){
         try{
             client = new Socket(address, port);
-            System.out.println("IP Datagram (packet) to be sent: "+ string.toUpperCase());
+            System.out.println("Send packet: "+ string.toUpperCase());
             dataoutput = new DataOutputStream(client.getOutputStream());
             dataoutput.writeUTF(string);
 
@@ -156,10 +156,10 @@ public class PacketSender extends Thread{
     // Encodes the payload and other necessary information into a packet
     private static String encode(InetAddress cip, InetAddress sip, String pl){
 
-        String headerl = "45";
-        String typeofs = "00";
-        String fo ="4000"; 
-        String ttltcp ="4006"; 
+        String headerl = "45"; //header length
+        String typeofs = "00"; //type of service (fixed)
+        String fo ="4000"; //the fragment offset of IP header fields
+        String ttltcp ="4006"; //40 the TTL field, 06 TCP
         String id = radidf() ;
 
 
@@ -170,7 +170,7 @@ public class PacketSender extends Thread{
         String plen = getpayloadlen(pl);
         String csum = calc(headerl + typeofs + plen + id + fo + ttltcp + clientip + serverip);
 
-        System.out.println("Checksum value: "+ (csum.toUpperCase())+"\n" );
+        System.out.println("CheckSum is: "+ (csum.toUpperCase())+"\n" );
 
         String data = headerl + typeofs + plen + id + fo + ttltcp + csum + clientip + serverip + spy(payload);
 
@@ -178,44 +178,23 @@ public class PacketSender extends Thread{
     }
 
     public static void main(String[] args) throws IOException {
-
+        //loacl ip address
         String destip =InetAddress.getLocalHost().getHostAddress();
+        //should be same
         String sip = destip;
-        String machineName = InetAddress.getLocalHost().getHostName(); 
+        String hostname = InetAddress.getLocalHost().getHostName();
         String payload = "COLOMBIA 2 - MESSI 0";
-        
- 
 
         BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
-        
-        if(args.length!=4) {
-            System.out.println("***********Welcome**************");
-            System.out.println("Would you like to enter custom data? Type y for yes ");
-            String option = input.readLine();
-            if (option.toLowerCase().equals("y")){
-                System.out.println("------------------------------------");
-                System.out.println("\nEnter a Server/Destination IP:   ");
-                destip = input.readLine();
-                System.out.println("\nEnter Payload:   ");
-                payload = input.readLine();
-                System.out.println("------------------------------------");
-            }
-        }
-        else if (args.length == 4){
-            destip =args[1];
-            payload = args[3];
-        }
 
-        System.out.println("-----Thank You!-----\n");
-        System.out.println("\n----- Provided data ------");
-        System.out.println("Source IP: "+ sip);
-        System.out.println("Destination IP: "+ destip);
-        System.out.println("Payload: "+ payload);
-        System.out.println("------------------------\n");
+        System.out.println("Using default Server/Destination IP and Payload.\n");
+        System.out.println("Source IP is: "+ sip);
+        System.out.println("Destination IP is: "+ destip);
+        System.out.println("Payload is: "+ payload +"\n");
 
         String data = encode(InetAddress.getByName(sip), InetAddress.getByName(destip), payload);
 
-        new PacketSender(machineName, 4999, data);
+        new PacketSender(hostname, 4999, data);
 
         client.close();
         dataoutput.close();
