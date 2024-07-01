@@ -2,22 +2,14 @@ import java.net.*;
 import java.util.Random;
 import java.io.*;
     
-    /**
-     * @class CEG 3185 Lab 3
-     * @author Michias Shiferaw and Teodora Vukojevic
-     * @since June 22 2023
-     * @version 3
-     * @param args
-     */
+
 
 public class PacketSender extends Thread{
 
     private static Socket myClient;
     private static DataOutputStream output;
 
-    /*
-     * Send out the IP datagram to the assigned address and port number through socket
-     */
+
     public PacketSender(String address, int port, String data){
         try{
             myClient = new Socket(address, port);
@@ -34,9 +26,6 @@ public class PacketSender extends Thread{
     }
     
 
-    /*
-     * Function for the String->HEX conversions 
-     */
     private static String convertStrToHex(String str){
         
         StringBuffer sb = new StringBuffer();
@@ -51,9 +40,7 @@ public class PacketSender extends Thread{
     }
 
 
-    /*
-     * Function for the IP->HEX conversions
-     */
+
     private static String convertIPToHex(InetAddress address){
         
         StringBuffer sb = new StringBuffer();
@@ -75,9 +62,7 @@ public class PacketSender extends Thread{
 
     }
     
-    /*
-     * Split value into sections of length four
-     */
+
     private static String splitFunc(String str){
         StringBuffer sb = new StringBuffer();
 
@@ -94,9 +79,7 @@ public class PacketSender extends Thread{
 
     }
 
-    /* 
-     * Add padded zeros if the length is less than 4
-     */
+
     private static String getLength(String str){
         int len = str.length()+20;
 
@@ -125,21 +108,21 @@ public class PacketSender extends Thread{
 
         int cint = 0;
 
-        //perform addition to caclulate the total of all 16 bits
+        
         for (int i=0; i<words.length;i++){
             cint+=  Integer.parseInt(words[i], 16);
         }
 
         String csum = Integer.toHexString(cint);
 
-        //remove the carry and add it to the remaining checksum value
+        
         if (csum.length()!=4){
             String f = csum.substring(0,1);
             csum=csum.substring(1);
             cint = Integer.parseInt(csum,16)+Integer.parseInt(f,16);
         }
 
-        //one's complement
+        
         cint = 65535-cint;
 
         return Integer.toHexString(cint);
@@ -147,22 +130,20 @@ public class PacketSender extends Thread{
     }
     
     private static String addPad(String str){
-        //To ensure that the payload + header length is a multiple of 8
+
         while (str.length()%8!=0){
             str=str+"0";
         }
         return str;
     }
 
-    /*
-     * Create a randomized identification field value (id_field)
-     */
+
     private static String setIdField(){
 
         Random r = new Random();
         String id_field = Integer.toHexString(r.nextInt(65535+1));
 
-        //if it is < 4 bytes add padded zeros 
+        
         if (id_field.length()==1){
             System.out.println("Yes");
             return "000"+id_field;
@@ -180,9 +161,7 @@ public class PacketSender extends Thread{
 
     }
 
-    /*
-     * Returns the data presented from user in an encoded stream to be sent through socket
-     */
+
     private static String encodeFunc(InetAddress ipClient, InetAddress ipServer, String payL){
         
 
@@ -191,13 +170,13 @@ public class PacketSender extends Thread{
         String flags ="4000"; //corresponds to the fragment offset of IP header fields (fixed)
         String ttl ="4006"; //40 corresponds to the TTL field, 06 corresponds to TCP, protocol field (fixed)
         String idField = setIdField() ; //identification field (variable)
-        // idField = "1c46" ;
- 
-        String clientIP = convertIPToHex(ipClient); //source IP address in the IP header in hex
-        String serverIP = convertIPToHex(ipServer); //destination IP address in the IP header in hex
-        String payload = convertStrToHex(payL); //the payload in hex
 
-        String len = getLength(payL); // record the payload's length
+ 
+        String clientIP = convertIPToHex(ipClient); 
+        String serverIP = convertIPToHex(ipServer); 
+        String payload = convertStrToHex(payL); 
+
+        String len = getLength(payL); 
         String csum = calcChecks(headerLength+tOS+len+idField+flags+ttl+clientIP+serverIP);
 
         System.out.println("Checksum value: "+ (csum.toUpperCase())+"\n" );
@@ -210,14 +189,13 @@ public class PacketSender extends Thread{
 
     public static void main(String[] args) throws IOException {
 
-        // Default ip's and payload inputs
+    
         String ipDest =InetAddress.getLocalHost().getHostAddress();
         String ipSrs = InetAddress.getLocalHost().getHostAddress();
         String machineName = InetAddress.getLocalHost().getHostName(); 
-        String payL = "COLOMBIA 2 - MESSI 0"; //default
+        String payL = "COLOMBIA 2 - MESSI 0"; 
         
-        // ipSrs ="192.168.0.3";
-        // ipDest ="192.168.0.1";
+ 
 
         BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
         
@@ -252,7 +230,7 @@ public class PacketSender extends Thread{
 
         new PacketSender(machineName, 4999, data);
 
-        //close socket and reading/writing tools
+
         myClient.close();
         output.close();
         input.close();
